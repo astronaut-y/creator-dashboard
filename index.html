@@ -1,0 +1,1724 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="创作工作台">
+<title>宇航员创作工作台</title>
+<style>
+:root {
+  --pink-main: #ff85a2;
+  --pink-light: #ffc2d1;
+  --pink-soft: #ffe5ec;
+  --pink-deep: #d63384;
+  --gold: #f5a623;
+  --gold-soft: #fff4e0;
+  --green: #52c41a;
+  --red: #ff4d4f;
+  --white: #ffffff;
+  --bg: #fff5f7;
+  --text: #2d2d2d;
+  --text-light: #888;
+  --shadow: 0 4px 16px rgba(255, 133, 162, 0.15);
+  --shadow-strong: 0 8px 24px rgba(214, 51, 132, 0.18);
+  --radius: 16px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue",
+               "Segoe UI", "Microsoft YaHei", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding-bottom: 80px;
+  background-image:
+    radial-gradient(circle at 20% 10%, rgba(255, 194, 209, 0.4) 0%, transparent 50%),
+    radial-gradient(circle at 80% 90%, rgba(255, 229, 236, 0.6) 0%, transparent 50%);
+}
+
+/* ===== 顶部 Header ===== */
+.header {
+  background: linear-gradient(135deg, var(--pink-main), var(--pink-deep));
+  color: white;
+  padding: 18px 20px 20px;
+  border-radius: 0 0 24px 24px;
+  box-shadow: var(--shadow-strong);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+.header-title {
+  font-size: 20px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.header-title svg { flex-shrink: 0; }
+.header-sub {
+  font-size: 12px;
+  opacity: 0.9;
+  margin-top: 4px;
+}
+.header-actions { display: flex; gap: 8px; }
+.header-btn {
+  background: rgba(255, 255, 255, 0.25);
+  border: none;
+  color: white;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(10px);
+}
+.header-btn:hover { background: rgba(255, 255, 255, 0.4); }
+
+/* ===== 发布倒计时条 ===== */
+.countdown-bar {
+  background: linear-gradient(135deg, rgba(245, 166, 35, 0.15), rgba(255, 133, 162, 0.15));
+  border: 1px dashed var(--gold);
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin: 12px 12px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+.countdown-bar svg { color: var(--gold); flex-shrink: 0; }
+.countdown-bar strong { color: var(--pink-deep); }
+.countdown-edit {
+  margin-left: auto;
+  background: var(--white);
+  border: 1px solid var(--pink-light);
+  color: var(--pink-deep);
+  padding: 4px 10px;
+  border-radius: 10px;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+/* ===== 布局 ===== */
+.layout {
+  display: flex;
+  margin-top: 8px;
+  min-height: calc(100vh - 140px);
+}
+
+/* ===== 左侧导航 ===== */
+.sidebar {
+  width: 130px;
+  background: var(--white);
+  margin: 12px 6px 12px 12px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 12px 8px;
+  flex-shrink: 0;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+  cursor: pointer;
+  margin-bottom: 5px;
+  transition: all 0.2s;
+  line-height: 1.3;
+}
+.nav-item:hover { background: var(--pink-soft); }
+.nav-item.active {
+  background: linear-gradient(135deg, var(--pink-main), var(--pink-deep));
+  color: white;
+  font-weight: 600;
+  box-shadow: var(--shadow);
+}
+.nav-item.finance.active {
+  background: linear-gradient(135deg, var(--gold), #d48806);
+  box-shadow: 0 4px 16px rgba(245, 166, 35, 0.3);
+}
+.nav-icon {
+  width: 18px; height: 18px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--pink-deep);
+}
+.nav-item.finance .nav-icon { color: var(--gold); }
+.nav-item.active .nav-icon { color: white; }
+.nav-icon svg { width: 16px; height: 16px; }
+
+/* ===== 右侧内容区 ===== */
+.main {
+  flex: 1;
+  margin: 12px 12px 12px 6px;
+  min-width: 0;
+}
+.section { display: none; }
+.section.active { display: block; animation: fadeIn 0.3s; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+.section-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-title svg { color: var(--pink-deep); flex-shrink: 0; }
+.section-title.gold svg { color: var(--gold); }
+.section-desc {
+  font-size: 12px;
+  color: var(--text-light);
+  margin-bottom: 14px;
+}
+
+/* ===== 卡片通用 ===== */
+.card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow);
+  margin-bottom: 12px;
+  border: 1px solid var(--pink-soft);
+}
+
+/* ===== 每日计划 ===== */
+.task-item {
+  display: flex;
+  align-items: center;
+  padding: 14px;
+  background: linear-gradient(135deg, #fff5f7, #ffffff);
+  border-radius: 14px;
+  margin-bottom: 10px;
+  border-left: 4px solid var(--pink-main);
+  transition: all 0.2s;
+}
+.task-item:hover { transform: translateX(2px); box-shadow: var(--shadow); }
+.task-item.done { opacity: 0.5; }
+.task-item.done .task-text { text-decoration: line-through; }
+.task-checkbox {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--pink-main);
+  margin-right: 12px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; flex-shrink: 0;
+  background: white;
+}
+.task-item.done .task-checkbox { background: var(--pink-main); }
+.task-item.done .task-checkbox::after { content: "✓"; color: white; font-size: 14px; font-weight: bold; }
+.task-content { flex: 1; }
+.task-text { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+.task-meta { font-size: 11px; color: var(--text-light); display: flex; gap: 8px; align-items: center; }
+.task-meta svg { vertical-align: middle; margin-right: 2px; }
+.task-tag { background: var(--pink-soft); color: var(--pink-deep); padding: 2px 8px; border-radius: 8px; font-size: 10px; }
+.task-delete { background: transparent; border: none; color: var(--text-light); font-size: 22px; cursor: pointer; padding: 0 8px; border-radius: 8px; line-height: 1; }
+.task-delete:hover { background: var(--pink-soft); color: var(--pink-deep); }
+
+.add-task-btn {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, var(--pink-main), var(--pink-deep));
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 6px;
+  box-shadow: var(--shadow);
+}
+.add-task-btn:hover { opacity: 0.9; }
+.add-task-btn.gold { background: linear-gradient(135deg, var(--gold), #d48806); }
+
+/* ===== 选题灵感 ===== */
+.idea-card {
+  background: var(--white);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--pink-soft);
+  transition: all 0.2s;
+  position: relative;
+}
+.idea-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-strong); }
+.idea-num {
+  display: inline-block;
+  background: var(--pink-main);
+  color: white;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  text-align: center;
+  font-size: 11px; font-weight: bold;
+  line-height: 22px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+.idea-title { font-size: 14px; font-weight: 600; margin-bottom: 6px; line-height: 1.4; }
+.idea-meta { display: flex; gap: 8px; font-size: 11px; color: var(--text-light); align-items: center; flex-wrap: wrap; }
+.idea-meta svg { color: var(--pink-deep); }
+.idea-tag { background: var(--pink-soft); color: var(--pink-deep); padding: 2px 8px; border-radius: 8px; font-size: 10px; }
+.idea-actions { display: flex; gap: 6px; margin-top: 8px; }
+.idea-btn {
+  background: var(--pink-soft);
+  color: var(--pink-deep);
+  border: none;
+  padding: 5px 12px;
+  border-radius: 10px;
+  font-size: 11px;
+  cursor: pointer;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.idea-btn:hover { background: var(--pink-light); }
+.idea-btn.primary { background: linear-gradient(135deg, var(--pink-main), var(--pink-deep)); color: white; }
+
+/* ===== 二创角度 ===== */
+.recreate-card {
+  background: linear-gradient(135deg, #fff5f7, #ffffff);
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 10px;
+  border: 1px dashed var(--pink-light);
+  position: relative;
+  padding-left: 16px;
+}
+.recreate-card::before {
+  content: ""; position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, var(--pink-main), var(--pink-deep));
+  border-radius: 14px 0 0 14px;
+}
+.recreate-source { font-size: 11px; color: var(--text-light); margin-bottom: 6px; background: var(--white); display: inline-block; padding: 2px 8px; border-radius: 8px; border: 1px solid var(--pink-soft); }
+.recreate-title { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+.recreate-angle { font-size: 12px; color: var(--pink-deep); line-height: 1.5; }
+.recreate-tag { display: inline-block; background: var(--pink-main); color: white; padding: 3px 10px; border-radius: 10px; font-size: 10px; margin-top: 8px; margin-right: 4px; }
+
+/* ===== 复盘 ===== */
+.review-card {
+  background: var(--white);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow);
+  border-left: 4px solid var(--pink-main);
+}
+.review-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+.review-title { font-size: 14px; font-weight: 600; flex: 1; }
+.review-date { font-size: 11px; color: var(--text-light); }
+.review-stats { display: flex; gap: 6px; margin-bottom: 8px; font-size: 12px; flex-wrap: wrap; }
+.stat-item { background: var(--pink-soft); padding: 4px 10px; border-radius: 8px; color: var(--pink-deep); }
+.review-issue { background: #fff5f7; padding: 8px 12px; border-radius: 8px; font-size: 12px; margin-bottom: 6px; line-height: 1.5; }
+.review-suggest { background: linear-gradient(135deg, #ffe5ec, #fff5f7); padding: 8px 12px; border-radius: 8px; font-size: 12px; margin-bottom: 6px; line-height: 1.5; }
+.review-next { background: linear-gradient(135deg, var(--pink-main), var(--pink-deep)); color: white; padding: 8px 12px; border-radius: 8px; font-size: 12px; line-height: 1.5; }
+.review-delete { background: transparent; border: none; color: var(--text-light); cursor: pointer; font-size: 18px; padding: 0 4px; margin-left: 8px; }
+
+/* ===== 投资理财 ===== */
+.finance-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.index-card {
+  background: linear-gradient(135deg, var(--gold-soft), var(--white));
+  border-radius: 12px;
+  padding: 12px;
+  border: 1px solid #ffe5b8;
+}
+.index-name { font-size: 12px; color: var(--text-light); margin-bottom: 4px; }
+.index-value { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+.index-change { font-size: 11px; font-weight: 600; }
+.index-change.up { color: var(--red); }
+.index-change.down { color: var(--green); }
+
+.fund-card {
+  background: var(--white);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  box-shadow: var(--shadow);
+  border-left: 3px solid var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.fund-info { flex: 1; }
+.fund-name { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+.fund-code { font-size: 11px; color: var(--text-light); }
+.fund-nav { text-align: right; }
+.fund-nav-value { font-size: 14px; font-weight: 700; }
+.fund-nav-change { font-size: 11px; font-weight: 600; }
+.fund-nav-change.up { color: var(--red); }
+.fund-nav-change.down { color: var(--green); }
+
+.news-card {
+  background: var(--white);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  box-shadow: var(--shadow);
+  border-left: 3px solid var(--gold);
+}
+.news-source { font-size: 10px; color: var(--gold); background: var(--gold-soft); padding: 2px 8px; border-radius: 8px; display: inline-block; margin-bottom: 6px; }
+.news-title { font-size: 13px; font-weight: 600; line-height: 1.4; margin-bottom: 4px; }
+.news-summary { font-size: 11px; color: var(--text-light); line-height: 1.5; }
+.news-time { font-size: 10px; color: var(--text-light); margin-top: 4px; }
+
+/* ===== 内容日历 ===== */
+.calendar {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow);
+  margin-bottom: 12px;
+}
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.calendar-month { font-size: 15px; font-weight: 700; }
+.calendar-nav-btn {
+  background: var(--pink-soft);
+  border: none;
+  color: var(--pink-deep);
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+}
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+.calendar-weekday { text-align: center; font-size: 11px; color: var(--text-light); padding: 4px 0; font-weight: 600; }
+.calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  position: relative;
+  background: #fffafa;
+  border: 1px solid transparent;
+}
+.calendar-day:hover { border-color: var(--pink-light); }
+.calendar-day.other-month { color: var(--text-light); opacity: 0.4; }
+.calendar-day.today { background: var(--pink-soft); font-weight: 700; color: var(--pink-deep); }
+.calendar-day.has-post::after {
+  content: "";
+  position: absolute;
+  bottom: 4px;
+  width: 5px; height: 5px;
+  background: var(--pink-main);
+  border-radius: 50%;
+}
+.calendar-day.has-plan::after {
+  content: "";
+  position: absolute;
+  bottom: 4px;
+  width: 5px; height: 5px;
+  background: var(--gold);
+  border-radius: 50%;
+}
+
+/* ===== 统计图表 ===== */
+.chart-container {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow);
+  margin-bottom: 12px;
+}
+.chart-title { font-size: 14px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+.chart-tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+.chart-tab {
+  padding: 5px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  cursor: pointer;
+  background: var(--pink-soft);
+  color: var(--pink-deep);
+  border: none;
+  font-weight: 500;
+}
+.chart-tab.active { background: linear-gradient(135deg, var(--pink-main), var(--pink-deep)); color: white; }
+.bar-chart { display: flex; align-items: flex-end; gap: 6px; height: 140px; padding: 8px 0; }
+.bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end; }
+.bar { width: 100%; max-width: 24px; background: linear-gradient(180deg, var(--pink-main), var(--pink-deep)); border-radius: 4px 4px 0 0; min-height: 4px; transition: height 0.4s; position: relative; }
+.bar.gold { background: linear-gradient(180deg, var(--gold), #d48806); }
+.bar-value { font-size: 10px; color: var(--text); font-weight: 600; }
+.bar-label { font-size: 10px; color: var(--text-light); }
+.stat-row { display: flex; gap: 8px; margin-bottom: 12px; }
+.stat-box {
+  flex: 1;
+  background: linear-gradient(135deg, var(--pink-soft), var(--white));
+  border-radius: 12px;
+  padding: 10px;
+  text-align: center;
+}
+.stat-box-num { font-size: 20px; font-weight: 700; color: var(--pink-deep); }
+.stat-box-label { font-size: 10px; color: var(--text-light); margin-top: 2px; }
+
+/* ===== 按钮组 ===== */
+.btn-group { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+.app-btn {
+  flex: 1; min-width: 70px;
+  padding: 10px;
+  background: var(--white);
+  border: 1px solid var(--pink-light);
+  border-radius: 12px;
+  color: var(--text);
+  font-size: 12px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  font-weight: 500;
+  box-shadow: var(--shadow);
+}
+.app-btn:hover { background: var(--pink-soft); }
+.app-btn.gold { border-color: var(--gold); color: var(--gold); }
+.app-btn.gold:hover { background: var(--gold-soft); }
+.refresh-btn {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, var(--pink-main), var(--pink-deep));
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow-strong);
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.refresh-btn:hover { opacity: 0.9; }
+.refresh-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.refresh-btn.gold { background: linear-gradient(135deg, var(--gold), #d48806); }
+.refresh-btn svg.spinning { animation: spin 1s linear infinite; }
+@keyframes spin { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+
+/* ===== 弹窗 ===== */
+.modal-mask {
+  position: fixed; inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: none;
+  align-items: center; justify-content: center;
+  z-index: 999;
+  padding: 20px;
+}
+.modal-mask.show { display: flex; }
+.modal {
+  background: var(--white);
+  border-radius: 20px;
+  padding: 24px;
+  width: 100%;
+  max-width: 380px;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-strong);
+}
+.modal-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; color: var(--pink-deep); }
+.modal-title.gold { color: var(--gold); }
+.modal-input, .modal-textarea, .modal-select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--pink-light);
+  border-radius: 10px;
+  font-size: 14px;
+  margin-bottom: 10px;
+  font-family: inherit;
+  outline: none;
+  background: white;
+  color: var(--text);
+}
+.modal-input:focus, .modal-textarea:focus, .modal-select:focus { border-color: var(--pink-main); }
+.modal-textarea { min-height: 70px; resize: vertical; }
+.modal-actions { display: flex; gap: 8px; margin-top: 8px; }
+.modal-btn { flex: 1; padding: 10px; border-radius: 10px; border: none; font-size: 14px; cursor: pointer; font-weight: 600; }
+.modal-btn.primary { background: linear-gradient(135deg, var(--pink-main), var(--pink-deep)); color: white; }
+.modal-btn.gold { background: linear-gradient(135deg, var(--gold), #d48806); color: white; }
+.modal-btn.cancel { background: var(--pink-soft); color: var(--pink-deep); }
+.modal-label { font-size: 12px; color: var(--text-light); margin-bottom: 4px; margin-top: 4px; }
+
+/* ===== 脚本生成结果 ===== */
+.script-output {
+  background: #fffafa;
+  border: 1px dashed var(--pink-light);
+  border-radius: 12px;
+  padding: 14px;
+  margin-top: 10px;
+  font-size: 13px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  max-height: 300px;
+  overflow-y: auto;
+}
+.script-section { margin-bottom: 10px; }
+.script-section-title { font-size: 12px; font-weight: 700; color: var(--pink-deep); margin-bottom: 4px; }
+
+/* ===== Toast ===== */
+.toast {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(214, 51, 132, 0.95);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 13px;
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+  box-shadow: var(--shadow-strong);
+}
+.toast.show { opacity: 1; }
+
+/* ===== 空状态 ===== */
+.empty { text-align: center; padding: 40px 20px; color: var(--text-light); font-size: 13px; }
+.empty-icon { width: 48px; height: 48px; margin: 0 auto 8px; color: var(--pink-light); }
+
+/* ===== 移动端 ===== */
+@media (max-width: 720px) {
+  .layout { flex-direction: column; }
+  .sidebar {
+    width: auto; margin: 12px;
+    display: flex; overflow-x: auto;
+    padding: 8px; gap: 6px;
+  }
+  .nav-item { flex-shrink: 0; margin-bottom: 0; padding: 8px 12px; font-size: 12px; white-space: nowrap; }
+  .main { margin: 0 12px 12px; }
+  .finance-grid { grid-template-columns: repeat(2, 1fr); }
+  .countdown-bar { margin: 12px; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div>
+      <div class="header-title">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5 3 0 4.74-1 6-2.5 1.5 1.5 3 2.5 6 2.5s4.5-1 6-2.5c1.26 1.5 3 2.5 6 2.5 0 0-.5-3.74-2-5"/><path d="M12 15l-3-6 3-7 3 7-3 6z"/><path d="M9 9h6"/></svg>
+        宇航员创作工作台
+      </div>
+      <div class="header-sub" id="today-date">2026年7月27日 · 星期日</div>
+    </div>
+    <div class="header-actions">
+      <button class="header-btn" onclick="exportData()" title="导出备份">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+      </button>
+      <button class="header-btn" onclick="document.getElementById('sync-modal').classList.add('show')" title="云同步">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 1 0 0-9h-1.8A7 7 0 1 0 4 14.9"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- 发布倒计时 -->
+<div class="countdown-bar" id="countdown-bar">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+  <span id="countdown-text">加载中...</span>
+  <button class="countdown-edit" onclick="openCountdownModal()">设置</button>
+</div>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="nav-item active" data-section="tasks" onclick="switchSection('tasks')">
+      <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span><span>每日计划</span>
+    </div>
+    <div class="nav-item" data-section="ideas" onclick="switchSection('ideas')">
+      <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg></span><span>选题灵感</span>
+    </div>
+    <div class="nav-item" data-section="hot" onclick="switchSection('hot')">
+      <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg></span><span>爆款热点</span>
+    </div>
+    <div class="nav-item" data-section="calendar" onclick="switchSection('calendar')">
+      <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span><span>内容日历</span>
+    </div>
+    <div class="nav-item" data-section="review" onclick="switchSection('review')">
+      <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg></span><span>内容复盘</span>
+    </div>
+    <div class="nav-item" data-section="stats" onclick="switchSection('stats')">
+      <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 16l4-4 4 4 5-7"/></svg></span><span>数据统计</span>
+    </div>
+    <div class="nav-item finance" data-section="finance" onclick="switchSection('finance')">
+      <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span><span>投资理财</span>
+    </div>
+    <div class="nav-item" data-section="memo" onclick="switchSection('memo')">
+      <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></span><span>备忘录</span>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- ========== 每日计划 ========== -->
+    <section class="section active" id="sec-tasks">
+      <div class="section-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        每日计划
+      </div>
+      <div class="section-desc">勾选完成 · 今天又是变美的一天</div>
+      <div id="task-list"></div>
+      <button class="add-task-btn" onclick="openTaskModal()">+ 新增任务</button>
+    </section>
+
+    <!-- ========== 选题灵感 ========== -->
+    <section class="section" id="sec-ideas">
+      <div class="section-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>
+        今日选题灵感
+      </div>
+      <div class="section-desc">AI 改写 · 贴合彩妆/护肤赛道 · 共 10 条 · 点击「生成脚本」AI 一键出视频脚本</div>
+      <div id="ideas-list"></div>
+    </section>
+
+    <!-- ========== 爆款热点/二创 ========== -->
+    <section class="section" id="sec-hot">
+      <div class="section-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+        爆款热点 / 二创
+      </div>
+      <div class="section-desc">抖音 + 小红书 + B 站 + 微博 + 微信专辑 · 多平台并行抓取</div>
+
+      <button class="refresh-btn" onclick="refreshHot()">
+        <svg id="refresh-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>
+        刷新热榜
+      </button>
+
+      <div class="btn-group">
+        <button class="app-btn" onclick="openApp('douyin')">抖音</button>
+        <button class="app-btn" onclick="openApp('bilibili')">B 站</button>
+        <button class="app-btn" onclick="openApp('xiaohongshu')">小红书</button>
+      </div>
+
+      <div class="section-title" style="margin-top:18px;font-size:15px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2s4 4 4 8-4 8-4 8-4-4-4-8 4-8 4-8z"/><path d="M5 22h14"/></svg>
+        二创角度
+      </div>
+      <div id="recreate-list"></div>
+    </section>
+
+    <!-- ========== 内容日历 ========== -->
+    <section class="section" id="sec-calendar">
+      <div class="section-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        内容日历
+      </div>
+      <div class="section-desc">粉色点=已发布 · 金色点=计划发布 · 点击日期添加计划</div>
+      <div class="calendar" id="calendar-widget"></div>
+      <button class="add-task-btn" onclick="openPlanModal()">+ 添加发布计划</button>
+      <div id="plan-list" style="margin-top:12px;"></div>
+    </section>
+
+    <!-- ========== 内容复盘 ========== -->
+    <section class="section" id="sec-review">
+      <div class="section-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+        内容复盘
+      </div>
+      <div class="section-desc">记录每次发布 · 分析下次如何优化</div>
+      <button class="add-task-btn" style="margin-bottom:14px;" onclick="openReviewModal()">+ 新增复盘</button>
+      <div id="review-list"></div>
+    </section>
+
+    <!-- ========== 数据统计 ========== -->
+    <section class="section" id="sec-stats">
+      <div class="section-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 16l4-4 4 4 5-7"/></svg>
+        数据统计
+      </div>
+      <div class="section-desc">基于复盘记录 · 看清爆款规律</div>
+
+      <div class="stat-row">
+        <div class="stat-box"><div class="stat-box-num" id="stat-total">0</div><div class="stat-box-label">总发布</div></div>
+        <div class="stat-box"><div class="stat-box-num" id="stat-avg-play">0</div><div class="stat-box-label">平均播放</div></div>
+        <div class="stat-box"><div class="stat-box-num" id="stat-avg-conv">0</div><div class="stat-box-label">平均转化</div></div>
+        <div class="stat-box"><div class="stat-box-num" id="stat-best">0</div><div class="stat-box-label">最佳转化</div></div>
+      </div>
+
+      <div class="chart-container">
+        <div class="chart-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--pink-deep)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 16l4-4 4 4 5-7"/></svg>
+          发布数趋势
+        </div>
+        <div class="chart-tabs">
+          <button class="chart-tab active" onclick="switchChartTab(this,'weekly')">近 7 天</button>
+          <button class="chart-tab" onclick="switchChartTab(this,'monthly')">近 4 周</button>
+        </div>
+        <div class="bar-chart" id="bar-chart"></div>
+      </div>
+
+      <div class="chart-container">
+        <div class="chart-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          转化趋势
+        </div>
+        <div class="bar-chart" id="conv-chart"></div>
+      </div>
+    </section>
+
+    <!-- ========== 投资理财 ========== -->
+    <section class="section" id="sec-finance">
+      <div class="section-title gold">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        投资理财资讯
+      </div>
+      <div class="section-desc">大盘行情 + 自选基金 + 财经快讯 · 工作日 14:30 看盘必备</div>
+
+      <div class="finance-grid" id="index-grid"></div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin:14px 0 8px;">
+        <div style="font-size:14px;font-weight:700;color:var(--gold);">我的基金</div>
+        <button class="idea-btn" onclick="openFundModal()" style="background:var(--gold-soft);color:var(--gold);">+ 添加基金</button>
+      </div>
+      <div id="fund-list"></div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin:18px 0 8px;">
+        <div style="font-size:14px;font-weight:700;color:var(--gold);">财经快讯</div>
+        <button class="idea-btn" onclick="refreshFinance()" style="background:var(--gold-soft);color:var(--gold);" id="fin-refresh-btn">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>
+          刷新
+        </button>
+      </div>
+      <div id="news-list"></div>
+    </section>
+
+    <!-- ========== 备忘录 ========== -->
+    <section class="section" id="sec-memo">
+      <div class="section-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+        备忘录
+      </div>
+      <div class="section-desc">随手记 · 灵感不再溜走</div>
+      <textarea id="memo-text" class="modal-textarea" style="min-height:240px;" placeholder="随手记下你的灵感..." oninput="saveMemo()"></textarea>
+    </section>
+
+  </main>
+</div>
+
+<!-- 任务新增弹窗 -->
+<div class="modal-mask" id="task-modal">
+  <div class="modal">
+    <div class="modal-title">新增任务</div>
+    <input class="modal-input" id="task-name" placeholder="任务名称，如：健身课">
+    <input class="modal-input" id="task-time" placeholder="时间，如：14:30（可选）">
+    <select class="modal-select" id="task-tag">
+      <option value="日常">日常</option>
+      <option value="学习">学习</option>
+      <option value="工作">工作</option>
+      <option value="创作">创作</option>
+      <option value="生活">生活</option>
+    </select>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeModal('task-modal')">取消</button>
+      <button class="modal-btn primary" onclick="addTask()">添加</button>
+    </div>
+  </div>
+</div>
+
+<!-- 复盘新增弹窗 -->
+<div class="modal-mask" id="review-modal">
+  <div class="modal">
+    <div class="modal-title">新增内容复盘</div>
+    <input class="modal-input" id="review-title" placeholder="内容标题">
+    <input class="modal-input" id="review-stats-input" placeholder="数据，如：播放1.2w 点赞350 转化12">
+    <textarea class="modal-textarea" id="review-issue" placeholder="本次哪里可以优化？"></textarea>
+    <textarea class="modal-textarea" id="review-suggest" placeholder="本次做对了什么？"></textarea>
+    <textarea class="modal-textarea" id="review-next" placeholder="下次如何优化？"></textarea>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeModal('review-modal')">取消</button>
+      <button class="modal-btn primary" onclick="addReview()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 发布计划弹窗 -->
+<div class="modal-mask" id="plan-modal">
+  <div class="modal">
+    <div class="modal-title">添加发布计划</div>
+    <input class="modal-input" id="plan-date" type="date">
+    <input class="modal-input" id="plan-title" placeholder="计划标题，如：黄黑皮粉底实测">
+    <select class="modal-select" id="plan-type">
+      <option value="视频">视频</option>
+      <option value="图文">图文</option>
+      <option value="直播">直播</option>
+    </select>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeModal('plan-modal')">取消</button>
+      <button class="modal-btn primary" onclick="addPlan()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 倒计时设置弹窗 -->
+<div class="modal-mask" id="countdown-modal">
+  <div class="modal">
+    <div class="modal-title">设置下次发布时间</div>
+    <input class="modal-input" id="countdown-datetime" type="datetime-local">
+    <input class="modal-input" id="countdown-title" placeholder="发布内容标题（可选）">
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeModal('countdown-modal')">取消</button>
+      <button class="modal-btn primary" onclick="saveCountdown()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 基金添加弹窗 -->
+<div class="modal-mask" id="fund-modal">
+  <div class="modal">
+    <div class="modal-title gold">添加自选基金</div>
+    <input class="modal-input" id="fund-code-input" placeholder="基金代码，如：110011">
+    <input class="modal-input" id="fund-name-input" placeholder="基金名称（可选，自动获取）">
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeModal('fund-modal')">取消</button>
+      <button class="modal-btn gold" onclick="addFund()">添加</button>
+    </div>
+  </div>
+</div>
+
+<!-- AI 脚本生成弹窗 -->
+<div class="modal-mask" id="script-modal">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-title">AI 视频脚本生成</div>
+    <div style="font-size:12px;color:var(--text-light);margin-bottom:10px;">基于选题：<strong id="script-source" style="color:var(--pink-deep);"></strong></div>
+    <div id="script-output-container" style="display:none;">
+      <div class="script-output" id="script-output"></div>
+      <div class="modal-actions">
+        <button class="modal-btn cancel" onclick="copyScript()">复制全文</button>
+        <button class="modal-btn primary" onclick="closeModal('script-modal')">完成</button>
+      </div>
+    </div>
+    <div id="script-form">
+      <div class="modal-label">视频时长（秒）</div>
+      <input class="modal-input" id="script-duration" value="30" type="number">
+      <div class="modal-label">风格</div>
+      <select class="modal-select" id="script-style">
+        <option value="痛点型">痛点型（先抛问题再给方案）</option>
+        <option value="测评型">测评型（多产品对比）</option>
+        <option value="种草型">种草型（闺蜜推荐口吻）</option>
+        <option value="教学型">教学型（步骤演示）</option>
+      </select>
+      <div class="modal-actions">
+        <button class="modal-btn cancel" onclick="closeModal('script-modal')">取消</button>
+        <button class="modal-btn primary" onclick="generateScript()">生成脚本</button>
+      </div>
+      <div style="font-size:11px;color:var(--text-light);margin-top:8px;">未配置 AI Key 时使用本地模板生成</div>
+    </div>
+  </div>
+</div>
+
+<!-- 云同步弹窗 -->
+<div class="modal-mask" id="sync-modal">
+  <div class="modal">
+    <div class="modal-title">数据云同步 / 备份</div>
+    <div style="font-size:13px;color:var(--text);line-height:1.7;margin-bottom:14px;">
+      <p style="margin-bottom:8px;"><strong>导出备份</strong>：下载 JSON 文件保存全部数据</p>
+      <p style="margin-bottom:8px;"><strong>导入恢复</strong>：上传 JSON 文件恢复数据</p>
+      <p style="margin-bottom:8px;"><strong>Gist 同步</strong>：配置 GitHub Gist 后可跨设备同步</p>
+    </div>
+    <input class="modal-input" id="sync-gist-url" placeholder="GitHub Gist Raw URL（可选）">
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="exportData()">导出备份</button>
+      <button class="modal-btn primary" onclick="document.getElementById('import-file').click()">导入恢复</button>
+    </div>
+    <input type="file" id="import-file" accept=".json" style="display:none;" onchange="importData(event)">
+    <div class="modal-actions" style="margin-top:8px;">
+      <button class="modal-btn gold" onclick="saveGistUrl()">保存 Gist 配置</button>
+      <button class="modal-btn cancel" onclick="closeModal('sync-modal')">关闭</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ========== 数据存储 ==========
+const STORAGE_KEYS = {
+  tasks: 'cd_tasks_v2',
+  reviews: 'cd_reviews_v2',
+  memo: 'cd_memo_v2',
+  plans: 'cd_plans_v1',
+  funds: 'cd_funds_v1',
+  countdown: 'cd_countdown_v1',
+  gistUrl: 'cd_gist_url_v1'
+};
+
+const DEFAULT_TASKS = [
+  { id: 1, name: '健身课', time: '', tag: '生活', done: false },
+  { id: 2, name: '工作日 14:30 看基金买卖', time: '14:30', tag: '日常', done: false },
+  { id: 3, name: '多邻国英语练习', time: '', tag: '学习', done: false }
+];
+
+const DEFAULT_FUNDS = [
+  { code: '110011', name: '易方达中小盘混合' },
+  { code: '161725', name: '招商中证白酒指数' },
+  { code: '005827', name: '易方达蓝筹精选混合' }
+];
+
+function loadData(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch (e) { return fallback; }
+}
+function saveData(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
+
+let tasks = loadData(STORAGE_KEYS.tasks, DEFAULT_TASKS);
+let reviews = loadData(STORAGE_KEYS.reviews, []);
+let plans = loadData(STORAGE_KEYS.plans, []);
+let funds = loadData(STORAGE_KEYS.funds, DEFAULT_FUNDS);
+let countdown = loadData(STORAGE_KEYS.countdown, null);
+let hotData = null;
+let financeData = null;
+let currentChartTab = 'weekly';
+let currentScriptIdea = null;
+
+// AI 配置（可改为自己的 API）
+const AI_CONFIG = {
+  apiKey: '',  // TODO: 填入你的 AI API Key
+  baseUrl: 'https://api.openai.com/v1',
+  model: 'gpt-4o-mini'
+};
+
+// ========== 日期 ==========
+function updateDate() {
+  const now = new Date();
+  const weekdays = ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
+  document.getElementById('today-date').textContent = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 · ${weekdays[now.getDay()]}`;
+}
+
+// ========== 倒计时 ==========
+function updateCountdown() {
+  const bar = document.getElementById('countdown-text');
+  if (!countdown || !countdown.datetime) {
+    bar.innerHTML = '尚未设置下次发布计划 <strong>点击设置 →</strong>';
+    return;
+  }
+  const target = new Date(countdown.datetime).getTime();
+  const now = Date.now();
+  const diff = target - now;
+  if (diff <= 0) {
+    bar.innerHTML = `「${escapeHtml(countdown.title || '发布')}」已到时间！`;
+    return;
+  }
+  const days = Math.floor(diff / 86400000);
+  const hours = Math.floor((diff % 86400000) / 3600000);
+  const mins = Math.floor((diff % 3600000) / 60000);
+  const secs = Math.floor((diff % 60000) / 1000);
+  bar.innerHTML = `距离「<strong>${escapeHtml(countdown.title || '下次发布')}</strong>」还有 <strong>${days}</strong>天 <strong>${hours}</strong>时 <strong>${mins}</strong>分 <strong>${secs}</strong>秒`;
+}
+function openCountdownModal() {
+  document.getElementById('countdown-datetime').value = countdown?.datetime || '';
+  document.getElementById('countdown-title').value = countdown?.title || '';
+  document.getElementById('countdown-modal').classList.add('show');
+}
+function saveCountdown() {
+  const dt = document.getElementById('countdown-datetime').value;
+  const title = document.getElementById('countdown-title').value.trim();
+  if (!dt) { toast('请选择时间'); return; }
+  countdown = { datetime: dt, title };
+  saveData(STORAGE_KEYS.countdown, countdown);
+  closeModal('countdown-modal');
+  updateCountdown();
+  toast('✓ 已设置');
+}
+setInterval(updateCountdown, 1000);
+
+// ========== 任务模块 ==========
+function renderTasks() {
+  const list = document.getElementById('task-list');
+  if (tasks.length === 0) {
+    list.innerHTML = '<div class="empty">还没有任务，点击下方添加</div>';
+    return;
+  }
+  list.innerHTML = tasks.map(t => `
+    <div class="task-item ${t.done ? 'done' : ''}">
+      <div class="task-checkbox" onclick="toggleTask(${t.id})"></div>
+      <div class="task-content">
+        <div class="task-text">${escapeHtml(t.name)}</div>
+        <div class="task-meta">
+          ${t.time ? `<span><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> ${escapeHtml(t.time)}</span>` : ''}
+          <span class="task-tag">${escapeHtml(t.tag)}</span>
+        </div>
+      </div>
+      <button class="task-delete" onclick="deleteTask(${t.id})">×</button>
+    </div>
+  `).join('');
+}
+function toggleTask(id) {
+  const t = tasks.find(x => x.id === id);
+  if (t) { t.done = !t.done; saveData(STORAGE_KEYS.tasks, tasks); renderTasks(); toast(t.done ? '✓ 已完成' : '已取消'); }
+}
+function deleteTask(id) {
+  if (!confirm('确认删除该任务？')) return;
+  tasks = tasks.filter(x => x.id !== id);
+  saveData(STORAGE_KEYS.tasks, tasks);
+  renderTasks();
+  toast('已删除');
+}
+function openTaskModal() { document.getElementById('task-modal').classList.add('show'); }
+function addTask() {
+  const name = document.getElementById('task-name').value.trim();
+  const time = document.getElementById('task-time').value.trim();
+  const tag = document.getElementById('task-tag').value;
+  if (!name) { toast('请输入任务名称'); return; }
+  tasks.push({ id: Date.now(), name, time, tag, done: false });
+  saveData(STORAGE_KEYS.tasks, tasks);
+  renderTasks();
+  closeModal('task-modal');
+  document.getElementById('task-name').value = '';
+  document.getElementById('task-time').value = '';
+  toast('✓ 已添加');
+}
+
+// ========== 复盘模块 ==========
+function renderReviews() {
+  const list = document.getElementById('review-list');
+  if (reviews.length === 0) {
+    list.innerHTML = '<div class="empty">还没有复盘，开始记录第一次发布吧</div>';
+    return;
+  }
+  list.innerHTML = reviews.slice().reverse().map(r => `
+    <div class="review-card">
+      <div class="review-header">
+        <div class="review-title">${escapeHtml(r.title)}</div>
+        <div style="display:flex;align-items:center;">
+          <span class="review-date">${r.date}</span>
+          <button class="review-delete" onclick="deleteReview(${r.id})">×</button>
+        </div>
+      </div>
+      ${r.stats ? `<div class="review-stats">${r.stats.split(/\s+/).map(s => `<span class="stat-item">${escapeHtml(s)}</span>`).join('')}</div>` : ''}
+      ${r.issue ? `<div class="review-issue">⚠ ${escapeHtml(r.issue)}</div>` : ''}
+      ${r.suggest ? `<div class="review-suggest">✓ ${escapeHtml(r.suggest)}</div>` : ''}
+      ${r.next ? `<div class="review-next">→ ${escapeHtml(r.next)}</div>` : ''}
+    </div>
+  `).join('');
+}
+function openReviewModal() { document.getElementById('review-modal').classList.add('show'); }
+function addReview() {
+  const title = document.getElementById('review-title').value.trim();
+  if (!title) { toast('请输入内容标题'); return; }
+  const now = new Date();
+  const dateStr = `${now.getMonth()+1}/${now.getDate()}`;
+  reviews.push({
+    id: Date.now(), title,
+    stats: document.getElementById('review-stats-input').value.trim(),
+    issue: document.getElementById('review-issue').value.trim(),
+    suggest: document.getElementById('review-suggest').value.trim(),
+    next: document.getElementById('review-next').value.trim(),
+    date: dateStr,
+    timestamp: now.getTime()
+  });
+  saveData(STORAGE_KEYS.reviews, reviews);
+  renderReviews();
+  renderStats();
+  renderCalendar();
+  closeModal('review-modal');
+  ['review-title','review-stats-input','review-issue','review-suggest','review-next'].forEach(id => document.getElementById(id).value = '');
+  toast('✓ 复盘已保存');
+}
+function deleteReview(id) {
+  if (!confirm('删除该复盘？')) return;
+  reviews = reviews.filter(x => x.id !== id);
+  saveData(STORAGE_KEYS.reviews, reviews);
+  renderReviews();
+  renderStats();
+  renderCalendar();
+}
+
+// ========== 内容日历 ==========
+let calendarDate = new Date();
+function renderCalendar() {
+  const y = calendarDate.getFullYear();
+  const m = calendarDate.getMonth();
+  const first = new Date(y, m, 1);
+  const last = new Date(y, m + 1, 0);
+  const firstDay = first.getDay();
+  const days = last.getDate();
+  const prevDays = new Date(y, m, 0).getDate();
+
+  const today = new Date();
+  const todayStr = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
+
+  // 标记已发布/计划
+  const postDates = new Set();
+  reviews.forEach(r => {
+    if (r.timestamp) {
+      const d = new Date(r.timestamp);
+      postDates.add(`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`);
+    }
+  });
+  const planDates = new Set();
+  plans.forEach(p => {
+    const d = new Date(p.date);
+    planDates.add(`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`);
+  });
+
+  let html = `
+    <div class="calendar-header">
+      <button class="calendar-nav-btn" onclick="changeMonth(-1)">‹</button>
+      <div class="calendar-month">${y}年${m+1}月</div>
+      <button class="calendar-nav-btn" onclick="changeMonth(1)">›</button>
+    </div>
+    <div class="calendar-grid">
+      ${['日','一','二','三','四','五','六'].map(w => `<div class="calendar-weekday">${w}</div>`).join('')}
+  `;
+  for (let i = firstDay - 1; i >= 0; i--) {
+    html += `<div class="calendar-day other-month">${prevDays - i}</div>`;
+  }
+  for (let d = 1; d <= days; d++) {
+    const dateStr = `${y}-${m}-${d}`;
+    const classes = ['calendar-day'];
+    if (dateStr === todayStr) classes.push('today');
+    if (postDates.has(dateStr)) classes.push('has-post');
+    if (planDates.has(dateStr)) classes.push('has-plan');
+    html += `<div class="${classes.join(' ')}" onclick="clickCalendarDay('${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}')">${d}</div>`;
+  }
+  const totalCells = firstDay + days;
+  const remain = (7 - totalCells % 7) % 7;
+  for (let i = 1; i <= remain; i++) {
+    html += `<div class="calendar-day other-month">${i}</div>`;
+  }
+  html += '</div>';
+  document.getElementById('calendar-widget').innerHTML = html;
+  renderPlans();
+}
+function changeMonth(delta) {
+  calendarDate.setMonth(calendarDate.getMonth() + delta);
+  renderCalendar();
+}
+function clickCalendarDay(dateStr) {
+  document.getElementById('plan-date').value = dateStr;
+  openPlanModal();
+}
+function openPlanModal() { document.getElementById('plan-modal').classList.add('show'); }
+function addPlan() {
+  const date = document.getElementById('plan-date').value;
+  const title = document.getElementById('plan-title').value.trim();
+  const type = document.getElementById('plan-type').value;
+  if (!date || !title) { toast('请填写日期和标题'); return; }
+  plans.push({ id: Date.now(), date, title, type });
+  saveData(STORAGE_KEYS.plans, plans);
+  renderCalendar();
+  closeModal('plan-modal');
+  document.getElementById('plan-title').value = '';
+  toast('✓ 计划已添加');
+}
+function renderPlans() {
+  const list = document.getElementById('plan-list');
+  if (plans.length === 0) {
+    list.innerHTML = '<div class="empty">暂无发布计划</div>';
+    return;
+  }
+  const sorted = plans.slice().sort((a, b) => new Date(a.date) - new Date(b.date));
+  list.innerHTML = sorted.map(p => `
+    <div class="review-card" style="border-left-color:var(--gold);">
+      <div class="review-header">
+        <div class="review-title">${escapeHtml(p.title)}</div>
+        <div style="display:flex;align-items:center;">
+          <span class="review-date">${p.date}</span>
+          <button class="review-delete" onclick="deletePlan(${p.id})">×</button>
+        </div>
+      </div>
+      <div class="review-stats"><span class="stat-item" style="background:var(--gold-soft);color:var(--gold);">${escapeHtml(p.type)}</span></div>
+    </div>
+  `).join('');
+}
+function deletePlan(id) {
+  plans = plans.filter(x => x.id !== id);
+  saveData(STORAGE_KEYS.plans, plans);
+  renderCalendar();
+}
+
+// ========== 数据统计 ==========
+function parseStats(statsStr) {
+  if (!statsStr) return { play: 0, like: 0, conv: 0 };
+  const play = (statsStr.match(/播放([\d.]+)w?/i) || [])[1];
+  const like = (statsStr.match(/点赞(\d+)/i) || [])[1];
+  const conv = (statsStr.match(/转化(\d+)/i) || [])[1];
+  return {
+    play: play ? parseFloat(play) * (statsStr.includes('w') || play > 1000 ? 10000 : 1) : 0,
+    like: like ? parseInt(like) : 0,
+    conv: conv ? parseInt(conv) : 0
+  };
+}
+function renderStats() {
+  const total = reviews.length;
+  document.getElementById('stat-total').textContent = total;
+  if (total === 0) {
+    ['stat-avg-play','stat-avg-conv','stat-best'].forEach(id => document.getElementById(id).textContent = '0');
+    document.getElementById('bar-chart').innerHTML = '<div class="empty" style="width:100%;">暂无数据</div>';
+    document.getElementById('conv-chart').innerHTML = '<div class="empty" style="width:100%;">暂无数据</div>';
+    return;
+  }
+  let totalPlay = 0, totalConv = 0, bestConv = 0;
+  reviews.forEach(r => {
+    const s = parseStats(r.stats);
+    totalPlay += s.play;
+    totalConv += s.conv;
+    if (s.conv > bestConv) bestConv = s.conv;
+  });
+  document.getElementById('stat-avg-play').textContent = totalPlay > 10000 ? (totalPlay/total/10000).toFixed(1) + 'w' : Math.round(totalPlay/total);
+  document.getElementById('stat-avg-conv').textContent = Math.round(totalConv/total);
+  document.getElementById('stat-best').textContent = bestConv;
+
+  renderChart();
+}
+function switchChartTab(btn, tab) {
+  document.querySelectorAll('.chart-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentChartTab = tab;
+  renderChart();
+}
+function renderChart() {
+  const now = new Date();
+  const labels = [], postData = [], convData = [];
+  if (currentChartTab === 'weekly') {
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now); d.setDate(d.getDate() - i);
+      const ds = `${d.getMonth()+1}/${d.getDate()}`;
+      labels.push(ds);
+      const dayPosts = reviews.filter(r => {
+        if (!r.timestamp) return false;
+        const rd = new Date(r.timestamp);
+        return rd.toDateString() === d.toDateString();
+      });
+      postData.push(dayPosts.length);
+      convData.push(dayPosts.reduce((sum, r) => sum + parseStats(r.stats).conv, 0));
+    }
+  } else {
+    for (let i = 3; i >= 0; i--) {
+      const weekStart = new Date(now); weekStart.setDate(weekStart.getDate() - i * 7 - 6);
+      const weekEnd = new Date(weekStart); weekEnd.setDate(weekEnd.getDate() + 6);
+      labels.push(`${weekStart.getMonth()+1}/${weekStart.getDate()}`);
+      const weekPosts = reviews.filter(r => {
+        if (!r.timestamp) return false;
+        const rd = new Date(r.timestamp);
+        return rd >= weekStart && rd <= weekEnd;
+      });
+      postData.push(weekPosts.length);
+      convData.push(weekPosts.reduce((sum, r) => sum + parseStats(r.stats).conv, 0));
+    }
+  }
+  const maxPost = Math.max(...postData, 1);
+  const maxConv = Math.max(...convData, 1);
+  document.getElementById('bar-chart').innerHTML = labels.map((l, i) => `
+    <div class="bar-wrap">
+      ${postData[i] > 0 ? `<div class="bar-value">${postData[i]}</div>` : ''}
+      <div class="bar" style="height:${(postData[i]/maxPost)*100}%"></div>
+      <div class="bar-label">${l}</div>
+    </div>
+  `).join('');
+  document.getElementById('conv-chart').innerHTML = labels.map((l, i) => `
+    <div class="bar-wrap">
+      ${convData[i] > 0 ? `<div class="bar-value">${convData[i]}</div>` : ''}
+      <div class="bar gold" style="height:${(convData[i]/maxConv)*100}%"></div>
+      <div class="bar-label">${l}</div>
+    </div>
+  `).join('');
+}
+
+// ========== 选题灵感 + 爆款热点 ==========
+async function loadHotData() {
+  const gistUrl = loadData(STORAGE_KEYS.gistUrl, '');
+  try {
+    if (gistUrl) {
+      const res = await fetch(gistUrl + '?t=' + Date.now());
+      if (res.ok) { hotData = await res.json(); return; }
+    }
+    const res = await fetch('./data/hot_content.json?t=' + Date.now());
+    if (res.ok) hotData = await res.json();
+  } catch (e) { console.warn('加载热榜失败', e); }
+}
+function renderIdeas() {
+  const list = document.getElementById('ideas-list');
+  const ideas = hotData?.ideas || [];
+  if (ideas.length === 0) {
+    list.innerHTML = '<div class="empty">暂无选题，点击刷新按钮生成</div>';
+    return;
+  }
+  list.innerHTML = ideas.map((it, i) => `
+    <div class="idea-card">
+      <div class="idea-title"><span class="idea-num">${i+1}</span>${escapeHtml(it.title)}</div>
+      <div class="idea-meta">
+        ${it.tags ? it.tags.map(t => `<span class="idea-tag">${escapeHtml(t)}</span>`).join('') : ''}
+        ${it.angle ? `<span><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l6 6 4-4 8 8"/><path d="M14 17h7v-7"/></svg> ${escapeHtml(it.angle)}</span>` : ''}
+      </div>
+      <div class="idea-actions">
+        <button class="idea-btn primary" onclick='openScriptModal(${JSON.stringify(it).replace(/'/g, "&#39;")})'>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h4"/></svg>
+          生成脚本
+        </button>
+        <button class="idea-btn" onclick='addIdeaToPlan(${JSON.stringify(it).replace(/'/g, "&#39;")})'>加入日历</button>
+      </div>
+    </div>
+  `).join('');
+}
+function renderRecreate() {
+  const list = document.getElementById('recreate-list');
+  const items = hotData?.recreate || [];
+  if (items.length === 0) {
+    list.innerHTML = '<div class="empty">暂无二创角度</div>';
+    return;
+  }
+  list.innerHTML = items.map(it => `
+    <div class="recreate-card">
+      <div class="recreate-source">来源：${escapeHtml(it.source || '抖音热榜')}</div>
+      <div class="recreate-title">${escapeHtml(it.title)}</div>
+      <div class="recreate-angle">${escapeHtml(it.angle)}</div>
+      <div>${(it.tags || []).map(t => `<span class="recreate-tag">${escapeHtml(t)}</span>`).join('')}</div>
+    </div>
+  `).join('');
+}
+async function refreshHot() {
+  const btn = document.querySelector('#sec-hot .refresh-btn');
+  const icon = document.getElementById('refresh-icon');
+  btn.disabled = true;
+  icon.classList.add('spinning');
+  toast('正在拉取最新热榜...');
+  await loadHotData();
+  renderIdeas();
+  renderRecreate();
+  btn.disabled = false;
+  icon.classList.remove('spinning');
+  toast('✓ 已更新');
+}
+
+// ========== AI 脚本生成 ==========
+function openScriptModal(idea) {
+  currentScriptIdea = idea;
+  document.getElementById('script-source').textContent = idea.title;
+  document.getElementById('script-form').style.display = 'block';
+  document.getElementById('script-output-container').style.display = 'none';
+  document.getElementById('script-modal').classList.add('show');
+}
+async function generateScript() {
+  const duration = document.getElementById('script-duration').value || 30;
+  const style = document.getElementById('script-style').value;
+  const idea = currentScriptIdea;
+  if (!idea) return;
+
+  document.getElementById('script-form').style.display = 'none';
+  document.getElementById('script-output-container').style.display = 'block';
+  document.getElementById('script-output').innerHTML = '<div style="color:var(--text-light);text-align:center;padding:20px;">AI 正在创作中...</div>';
+
+  let script = null;
+  if (AI_CONFIG.apiKey) {
+    try {
+      const res = await fetch(`${AI_CONFIG.baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${AI_CONFIG.apiKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: AI_CONFIG.model,
+          messages: [{
+            role: 'user',
+            content: `你是彩妆好物/护肤好物分享赛道的爆款短视频编剧。基于以下选题生成 ${duration} 秒的${style}视频脚本。
+
+选题：${idea.title}
+角度：${idea.angle || ''}
+
+输出严格 JSON：
+{
+  "hook": "前3秒钩子文案（要冲突感/痛点/反差）",
+  "body": ["正文分镜1（画面+台词）", "分镜2", "分镜3"],
+  "cta": "结尾行动号召（引导加购小黄车）",
+  "title": "推荐视频标题（3 个）",
+  "tags": ["推荐话题标签 5 个"]
+}`
+          }],
+          temperature: 0.9,
+          response_format: { type: 'json_object' }
+        })
+      });
+      if (res.ok) {
+        const content = (await res.json()).choices[0].message.content;
+        script = JSON.parse(content);
+      }
+    } catch (e) { console.warn(e); }
+  }
+
+  if (!script) {
+    // 本地模板生成
+    script = localGenerateScript(idea, duration, style);
+  }
+
+  renderScript(script);
+}
+function localGenerateScript(idea, duration, style) {
+  const hooks = {
+    '痛点型': `姐妹们！${idea.title.split(/[｜!！]/)[0]}这个问题我踩坑 3 年才搞明白`,
+    '测评型': `实测 5 款！${idea.title.split(/[｜!！]/)[0]}到底哪款值得冲？`,
+    '种草型': `被闺蜜追着要链接！${idea.title.split(/[｜!！]/)[0]}真的太好用了`,
+    '教学型': `新手必看！${idea.title.split(/[｜!！]/)[0]}保姆级教程来了`
+  };
+  return {
+    hook: hooks[style] || hooks['痛点型'],
+    body: [
+      `分镜1（0-5秒）：${idea.title}，特写产品+痛点画面，台词：「${hooks[style] || hooks['痛点型']}」`,
+      `分镜2（5-20秒）：展示使用过程/对比效果，台词：「看这个质地/上脸效果，关键成分是...」`,
+      `分镜3（20-${duration}秒）：效果对比+真人反馈，台词：「用了一周，明显感觉到...」`
+    ],
+    cta: `姐妹们链接放小黄车了，趁活动价赶紧冲！评论区扣 1 告诉我你想看哪类好物测评～`,
+    title: [idea.title, `${idea.title}｜实测避雷指南`, `${idea.title}｜姐妹们冲就完了`],
+    tags: idea.tags || ['#彩妆好物', '#护肤分享', '#小黄车好物', '#平价彩妆', '#好物推荐']
+  };
+}
+function renderScript(s) {
+  const html = `
+    <div class="script-section">
+      <div class="script-section-title">前 3 秒钩子</div>
+      <div>${escapeHtml(s.hook)}</div>
+    </div>
+    <div class="script-section">
+      <div class="script-section-title">正文分镜</div>
+      ${s.body.map(b => `<div>• ${escapeHtml(b)}</div>`).join('')}
+    </div>
+    <div class="script-section">
+      <div class="script-section-title">结尾 CTA</div>
+      <div>${escapeHtml(s.cta)}</div>
+    </div>
+    <div class="script-section">
+      <div class="script-section-title">推荐标题</div>
+      ${s.title.map(t => `<div>• ${escapeHtml(t)}</div>`).join('')}
+    </div>
+    <div class="script-section">
+      <div class="script-section-title">话题标签</div>
+      <div>${s.tags.map(t => `<span class="idea-tag" style="margin-right:4px;">${escapeHtml(t)}</span>`).join('')}</div>
+    </div>
+  `;
+  document.getElementById('script-output').innerHTML = html;
+  document.getElementById('script-output').dataset.raw = JSON.stringify(s);
+}
+function copyScript() {
+  const raw = document.getElementById('script-output').dataset.raw;
+  if (!raw) return;
+  const s = JSON.parse(raw);
+  const text = `【前3秒钩子】\n${s.hook}\n\n【正文分镜】\n${s.body.map(b => '• ' + b).join('\n')}\n\n【结尾CTA】\n${s.cta}\n\n【推荐标题】\n${s.title.map(t => '• ' + t).join('\n')}\n\n【话题标签】\n${s.tags.join(' ')}`;
+  navigator.clipboard.writeText(text).then(() => toast('✓ 已复制到剪贴板')).catch(() => toast('复制失败，请手动选择'));
+}
+function addIdeaToPlan(idea) {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('plan-date').value = today;
+  document.getElementById('plan-title').value = idea.title;
+  document.getElementById('plan-type').value = '视频';
+  openPlanModal();
+}
+
+// ========== 投资理财 ==========
+async function loadFinanceData() {
+  try {
+    const res = await fetch('./data/finance.json?t=' + Date.now());
+    if (res.ok) financeData = await res.json();
+  } catch (e) { console.warn('加载财经数据失败', e); }
+}
+function renderFinance() {
+  // 大盘指数
+  const indexes = financeData?.indexes || [];
+  document.getElementById('index-grid').innerHTML = indexes.length ? indexes.map(idx => `
+    <div class="index-card">
+      <div class="index-name">${escapeHtml(idx.name)}</div>
+      <div class="index-value">${escapeHtml(idx.value)}</div>
+      <div class="index-change ${idx.change >= 0 ? 'up' : 'down'}">${idx.change >= 0 ? '+' : ''}${escapeHtml(String(idx.change))}% ${idx.change >= 0 ? '▲' : '▼'}</div>
+    </div>
+  `).join('') : '<div class="empty">暂无行情数据</div>';
+
+  // 自选基金
+  document.getElementById('fund-list').innerHTML = funds.length ? funds.map(f => {
+    const live = (financeData?.funds || []).find(x => x.code === f.code);
+    const nav = live?.nav || '--';
+    const change = live?.change;
+    return `
+      <div class="fund-card">
+        <div class="fund-info">
+          <div class="fund-name">${escapeHtml(f.name)}</div>
+          <div class="fund-code">${escapeHtml(f.code)}</div>
+        </div>
+        <div class="fund-nav">
+          <div class="fund-nav-value">${nav}</div>
+          <div class="fund-nav-change ${change >= 0 ? 'up' : change < 0 ? 'down' : ''}">${change != null ? (change >= 0 ? '+' : '') + change + '%' : ''}</div>
+        </div>
+        <button class="task-delete" onclick="removeFund('${f.code}')" style="margin-left:8px;">×</button>
+      </div>
+    `;
+  }).join('') : '<div class="empty">暂无自选基金</div>';
+
+  // 财经快讯
+  const news = financeData?.news || [];
+  document.getElementById('news-list').innerHTML = news.length ? news.map(n => `
+    <div class="news-card">
+      <div class="news-source">${escapeHtml(n.source)}</div>
+      <div class="news-title">${escapeHtml(n.title)}</div>
+      ${n.summary ? `<div class="news-summary">${escapeHtml(n.summary)}</div>` : ''}
+      <div class="news-time">${escapeHtml(n.time || '')}</div>
+    </div>
+  `).join('') : '<div class="empty">暂无快讯</div>';
+}
+function openFundModal() { document.getElementById('fund-modal').classList.add('show'); }
+function addFund() {
+  const code = document.getElementById('fund-code-input').value.trim();
+  const name = document.getElementById('fund-name-input').value.trim() || `基金 ${code}`;
+  if (!code) { toast('请输入基金代码'); return; }
+  if (funds.find(f => f.code === code)) { toast('该基金已存在'); return; }
+  funds.push({ code, name });
+  saveData(STORAGE_KEYS.funds, funds);
+  renderFinance();
+  closeModal('fund-modal');
+  document.getElementById('fund-code-input').value = '';
+  document.getElementById('fund-name-input').value = '';
+  toast('✓ 已添加');
+}
+function removeFund(code) {
+  if (!confirm('删除该基金？')) return;
+  funds = funds.filter(f => f.code !== code);
+  saveData(STORAGE_KEYS.funds, funds);
+  renderFinance();
+}
+async function refreshFinance() {
+  const btn = document.getElementById('fin-refresh-btn');
+  btn.disabled = true;
+  toast('正在刷新财经数据...');
+  await loadFinanceData();
+  renderFinance();
+  btn.disabled = false;
+  toast('✓ 已刷新');
+}
+
+// ========== 备忘录 ==========
+function initMemo() { document.getElementById('memo-text').value = loadData(STORAGE_KEYS.memo, ''); }
+function saveMemo() { saveData(STORAGE_KEYS.memo, document.getElementById('memo-text').value); }
+
+// ========== 数据导入导出 ==========
+function exportData() {
+  const data = {
+    version: 2,
+    exported_at: new Date().toISOString(),
+    tasks, reviews, plans, funds, countdown,
+    memo: loadData(STORAGE_KEYS.memo, ''),
+    gistUrl: loadData(STORAGE_KEYS.gistUrl, '')
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `creator-backup-${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('✓ 已导出备份');
+}
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data.tasks) { tasks = data.tasks; saveData(STORAGE_KEYS.tasks, tasks); }
+      if (data.reviews) { reviews = data.reviews; saveData(STORAGE_KEYS.reviews, reviews); }
+      if (data.plans) { plans = data.plans; saveData(STORAGE_KEYS.plans, plans); }
+      if (data.funds) { funds = data.funds; saveData(STORAGE_KEYS.funds, funds); }
+      if (data.countdown != null) { countdown = data.countdown; saveData(STORAGE_KEYS.countdown, countdown); }
+      if (data.memo != null) { saveData(STORAGE_KEYS.memo, data.memo); }
+      if (data.gistUrl != null) { saveData(STORAGE_KEYS.gistUrl, data.gistUrl); }
+      renderTasks(); renderReviews(); renderCalendar(); renderFinance(); initMemo(); updateCountdown(); renderStats();
+      closeModal('sync-modal');
+      toast('✓ 数据已恢复');
+    } catch (err) { toast('导入失败：文件格式错误'); }
+  };
+  reader.readAsText(file);
+}
+function saveGistUrl() {
+  const url = document.getElementById('sync-gist-url').value.trim();
+  saveData(STORAGE_KEYS.gistUrl, url);
+  toast('✓ Gist 配置已保存');
+}
+
+// ========== 唤起 App ==========
+function openApp(name) {
+  const schemes = {
+    douyin: { url: 'snssdk1128://', web: 'https://www.douyin.com/' },
+    bilibili: { url: 'bilibili://', web: 'https://www.bilibili.com/' },
+    xiaohongshu: { url: 'xhsdiscover://', web: 'https://www.xiaohongshu.com/' }
+  };
+  const s = schemes[name];
+  if (!s) return;
+  const t = Date.now();
+  window.location.href = s.url;
+  setTimeout(() => { if (Date.now() - t < 1500) window.open(s.web, '_blank'); }, 1200);
+}
+
+// ========== 导航 ==========
+function switchSection(name) {
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.section === name));
+  document.querySelectorAll('.section').forEach(el => el.classList.toggle('active', el.id === 'sec-' + name));
+  if (name === 'stats') renderStats();
+  if (name === 'calendar') renderCalendar();
+}
+
+// ========== 工具 ==========
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => t.classList.remove('show'), 1800);
+}
+function escapeHtml(s) {
+  if (s == null) return '';
+  return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+document.querySelectorAll('.modal-mask').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('show'); });
+});
+
+// ========== 初始化 ==========
+(async function init() {
+  updateDate();
+  updateCountdown();
+  renderTasks();
+  renderReviews();
+  initMemo();
+  await Promise.all([loadHotData(), loadFinanceData()]);
+  renderIdeas();
+  renderRecreate();
+  renderFinance();
+  renderCalendar();
+  renderStats();
+})();
+</script>
+
+</body>
+</html>
