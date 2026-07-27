@@ -610,18 +610,33 @@ body {
 .empty { text-align: center; padding: 40px 20px; color: var(--text-light); font-size: 13px; }
 .empty-icon { width: 48px; height: 48px; margin: 0 auto 8px; color: var(--pink-light); }
 
-/* ===== 移动端 ===== */
+/* ===== 移动端：保持竖版导航 ===== */
 @media (max-width: 720px) {
-  .layout { flex-direction: column; }
+  .layout { flex-direction: row; }
   .sidebar {
-    width: auto; margin: 12px;
-    display: flex; overflow-x: auto;
-    padding: 8px; gap: 6px;
+    width: 68px;
+    margin: 8px 4px 8px 8px;
+    padding: 8px 4px;
+    overflow-y: auto;
+    flex-shrink: 0;
   }
-  .nav-item { flex-shrink: 0; margin-bottom: 0; padding: 8px 12px; font-size: 12px; white-space: nowrap; }
-  .main { margin: 0 12px 12px; }
+  .nav-item {
+    flex-direction: column;
+    gap: 3px;
+    padding: 8px 4px;
+    margin-bottom: 4px;
+    font-size: 10px;
+    white-space: nowrap;
+    text-align: center;
+    border-radius: 10px;
+  }
+  .nav-icon { width: 20px; height: 20px; }
+  .nav-icon svg { width: 16px; height: 16px; }
+  .main { margin: 8px 8px 8px 4px; }
   .finance-grid { grid-template-columns: repeat(2, 1fr); }
-  .countdown-bar { margin: 12px; }
+  .countdown-bar { margin: 8px; font-size: 11px; }
+  .header { padding: 14px 14px 16px; }
+  .header-title { font-size: 17px; }
 }
 </style>
 </head>
