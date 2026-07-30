@@ -1,33 +1,30 @@
 name: Daily Scrape
 
 on:
-  # 每天北京时间 8:00（UTC 0:00）自动跑
   schedule:
     - cron: '0 0 * * *'
-  # 每天 14:00 再跑一次（看盘前更新财经数据）
-  - cron: '0 6 * * *'
-  # 手动触发
+    - cron: '0 6 * * *'
   workflow_dispatch:
 
 permissions:
-  contents: write  # 允许提交回仓库
+  contents: write
 
 jobs:
   scrape:
     runs-on: ubuntu-latest
     steps:
-      - name: 检出代码
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: 安装 Python
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: 安装依赖
+      - name: Install dependencies
         run: pip install requests
 
-      - name: 抓取热榜 + 财经数据
+      - name: Run scraper
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GIST_ID: ${{ secrets.GIST_ID }}
@@ -37,7 +34,6 @@ jobs:
           DAILYHOT_API: ${{ secrets.DAILYHOT_API }}
         run: python hot_scraper.py --commit
 
-      - name: 触发 GitHub Pages 重建
+      - name: Done
         if: success()
-        run: |
-          echo "✅ 数据已更新，GitHub Pages 将自动重建"
+        run: echo "Data updated successfully"
