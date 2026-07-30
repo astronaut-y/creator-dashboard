@@ -375,10 +375,6 @@ def rewrite_with_rules(hot_items: list) -> dict:
         recreate.append({"source": src, "original": short, "title": title, "angle": angle, "tags": tags})
 
     return {"ideas": ideas, "recreate": recreate}
-            tags = ["#跨界借势", "#氛围感"]
-        recreate.append({"source": src, "original": original, "title": title, "angle": angle, "tags": tags})
-
-    return {"ideas": ideas, "recreate": recreate}
 
 
 # ============================================================
