@@ -33,7 +33,8 @@ import requests
 
 # ============== 配置 ==============
 # DailyHotApi 官方 demo（GitHub Actions 海外服务器可访问）
-DAILYHOT_API = os.getenv("DAILYHOT_API", "https://api-hot.imsyy.top")
+# 备选：可自部署 Vercel 版本 https://your-dailyhot.vercel.app
+DAILYHOT_API = os.getenv("DAILYHOT_API", "https://api-hot.imsyy.top").rstrip("/")
 
 # 要抓取的平台列表
 HOT_PLATFORMS = ["douyin", "weibo", "bilibili", "zhihu", "toutiao", "xiaohongshu"]
@@ -126,6 +127,60 @@ def fetch_weibo_direct() -> list:
     return []
 
 
+def fetch_douyin_direct() -> list:
+    """抖音热榜直连（备用）"""
+    try:
+        pc_headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36",
+            "Referer": "https://www.douyin.com/"
+        }
+        res = requests.get("https://www.douyin.com/aweme/v1/web/hotsearch/list/",
+                          headers=pc_headers, timeout=10)
+        if res.status_code == 200:
+            data = res.json()
+            return [
+                {"title": it.get("word", ""), "hot": it.get("hot_value", 0), "source": "抖音热榜"}
+                for it in (data.get("data", {}).get("word_list") or [])[:15]
+            ]
+    except Exception as e:
+        print(f"  [抖音直连] {e}", file=sys.stderr)
+    return []
+
+
+def fetch_zhihu_direct() -> list:
+    """知乎热榜直连（备用）"""
+    try:
+        res = requests.get("https://www.zhihu.com/api/v3/feed/topstory/hot-lists/total?limit=15",
+                          headers={**HEADERS, "Referer": "https://www.zhihu.com/hot"}, timeout=10)
+        if res.status_code == 200:
+            data = res.json()
+            return [
+                {"title": it.get("target", {}).get("title", ""),
+                 "hot": it.get("detail_text", ""),
+                 "source": "知乎热榜"}
+                for it in (data.get("data") or [])[:15]
+            ]
+    except Exception as e:
+        print(f"  [知乎直连] {e}", file=sys.stderr)
+    return []
+
+
+def fetch_toutiao_direct() -> list:
+    """今日头条热榜直连（备用）"""
+    try:
+        res = requests.get("https://www.toutiao.com/hot-event/hot-board/?origin=toutiao_pc",
+                          headers=HEADERS, timeout=10)
+        if res.status_code == 200:
+            data = res.json()
+            return [
+                {"title": it.get("Title", ""), "hot": it.get("HotValue", ""), "source": "今日头条"}
+                for it in (data.get("data") or [])[:15]
+            ]
+    except Exception as e:
+        print(f"  [头条直连] {e}", file=sys.stderr)
+    return []
+
+
 def fetch_wechat_mp() -> list:
     """微信公众号专辑 - 通过 RSSHub"""
     items = []
@@ -158,29 +213,47 @@ def fetch_wechat_mp() -> list:
 
 
 def fetch_all_hot() -> list:
-    """并行抓取所有平台热榜，多源 fallback"""
+    """并行抓取所有平台热榜，主源 + 备用源同时跑"""
     print("[热点] 正在并行抓取多平台热榜...")
     all_items = []
 
-    # 主源：DailyHotApi
-    with ThreadPoolExecutor(max_workers=6) as ex:
-        futures = {ex.submit(fetch_dailyhot, p): p for p in HOT_PLATFORMS}
+    # 同时启动主源（DailyHotApi）和备用源（直连接口）
+    all_tasks = {}
+    for p in HOT_PLATFORMS:
+        all_tasks[("dailyhot", p)] = ("dailyhot", p)
+    all_tasks[("direct", "bilibili")] = ("direct", "bilibili")
+    all_tasks[("direct", "weibo")] = ("direct", "weibo")
+    all_tasks[("direct", "douyin")] = ("direct", "douyin")
+    all_tasks[("direct", "zhihu")] = ("direct", "zhihu")
+    all_tasks[("direct", "toutiao")] = ("direct", "toutiao")
+
+    with ThreadPoolExecutor(max_workers=11) as ex:
+        futures = {}
+        for key, val in all_tasks.items():
+            src_type, platform = val
+            if src_type == "dailyhot":
+                futures[ex.submit(fetch_dailyhot, platform)] = f"DailyHotApi/{platform}"
+            else:
+                direct_fns = {
+                    "bilibili": fetch_bilibili_direct,
+                    "weibo": fetch_weibo_direct,
+                    "douyin": fetch_douyin_direct,
+                    "zhihu": fetch_zhihu_direct,
+                    "toutiao": fetch_toutiao_direct,
+                }
+                futures[ex.submit(direct_fns[platform])] = f"Direct/{platform}"
+
         for f in as_completed(futures):
-            platform = futures[f]
+            label = futures[f]
             try:
                 items = f.result()
-                print(f"  ✓ {platform} (DailyHotApi): {len(items)} 条")
-                all_items.extend(items)
+                if items:
+                    print(f"  ✓ {label}: {len(items)} 条")
+                    all_items.extend(items)
+                else:
+                    print(f"  · {label}: 0 条")
             except Exception as e:
-                print(f"  ✗ {platform}: {e}", file=sys.stderr)
-
-    # 备用源：直连接口（如果主源没数据）
-    if not any(it["source"] == "B站热门" for it in all_items):
-        print("  [备用] B站直连...")
-        all_items.extend(fetch_bilibili_direct())
-    if not any(it["source"] == "微博热搜" for it in all_items):
-        print("  [备用] 微博直连...")
-        all_items.extend(fetch_weibo_direct())
+                print(f"  ✗ {label}: {e}", file=sys.stderr)
 
     # 微信专辑
     if WX_RSS_URLS:
@@ -189,7 +262,7 @@ def fetch_all_hot() -> list:
         print(f"  ✓ 微信专辑: {len(wx_items)} 条")
         all_items.extend(wx_items)
 
-    # 去重
+    # 去重（按标题）
     seen, unique = set(), []
     for it in all_items:
         t = it.get("title", "").strip()
@@ -197,7 +270,8 @@ def fetch_all_hot() -> list:
             seen.add(t)
             unique.append(it)
 
-    print(f"\n  共抓取 {len(unique)} 条原始热榜数据（来自 {len(set(it['source'] for it in unique))} 个平台）")
+    platforms = list(set(it["source"] for it in unique))
+    print(f"\n  共抓取 {len(unique)} 条原始热榜数据（来自 {len(platforms)} 个平台：{', '.join(platforms)}）")
     return unique[:80]
 
 
