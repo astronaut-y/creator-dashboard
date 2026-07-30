@@ -326,37 +326,55 @@ def rewrite_with_rules(hot_items: list) -> dict:
     ]
     products = ["粉底液", "口红", "眼影盘", "面膜", "精华", "面霜", "化妆水", "卸妆膏", "防晒霜", "眉笔"]
     brands = ["花西子", "完美日记", "橘朵", "毛戈平", "酵色", "INTO YOU", "Colorkey", "玛丽黛佳", "卡姿兰"]
+    hooks = ["实测避雷", "保姆级教程", "姐妹们冲", "千万别买错", "回购8次", "亲测好用", "性价比之王"]
+
+    def short_title(t, max_len=15):
+        """截断长标题"""
+        t = re.sub(r"【.*?】", "", t)  # 去掉【】标记
+        t = re.sub(r"[|｜].*", "", t)  # 去掉 | 后面的
+        t = t.strip()
+        return t[:max_len] + "…" if len(t) > max_len else t
 
     ideas = []
-    # 前 5 条基于真实热榜改编
+    # 前 5 条基于真实热榜改编（标题精简化）
     for it in hot_items[:5]:
         original = it.get("title", "")
         if not original:
             continue
+        short = short_title(original)
+        brand = random.choice(brands)
+        product = random.choice(products)
+        hook = random.choice(hooks)
         ideas.append({
-            "title": f"{original}｜{random.choice(brands)}{random.choice(products)}实测",
+            "title": f"借势「{short}」｜{brand}{product}{hook}",
             "tags": ["#借势热点", "#好物测评"],
-            "angle": f"借势「{original[:20]}」热度，挂同类爆品小黄车"
+            "angle": f"借势热榜话题，挂{brand}{product}小黄车"
         })
     # 后 5 条用静态模板
     for title, tags, angle in static_ideas:
         t = title.replace("{product}", random.choice(products)).replace("{brand}", random.choice(brands))
         ideas.append({"title": t, "tags": tags, "angle": angle})
 
-    # 二创角度：从热榜里挑 10 条
+    # 二创角度：从热榜里挑 10 条（标题精简化）
     recreate = []
     for it in hot_items[:10]:
         original = it.get("title", "")
         src = it.get("source", "全网热榜")
         if not original:
             continue
+        short = short_title(original)
         if any(k in original for k in ["妆", "美", "护肤", "面膜", "口红", "眼影", "粉底", "穿搭", "时尚"]):
-            angle = f"借势「{original[:20]}」热度，做同款妆容/护肤流程拆解，挂同类爆品小黄车"
-            title = f"{original}｜{random.choice(brands)}{random.choice(products)}实测"
+            angle = f"借势「{short}」热度，做同款妆容/护肤流程拆解，挂同类爆品小黄车"
+            title = f"「{short}」同款妆容拆解｜{random.choice(brands)}{random.choice(products)}实测"
             tags = ["#借势热点", "#同款"]
         else:
-            angle = f"把「{original[:20]}」话题嫁接到美妆场景：{random.choice(['明星同款妆容', '通勤妆拆解', '氛围感妆容'])}，自然挂小黄车"
-            title = f"{original}×美妆｜{random.choice(['这3支口红必入', '5分钟打造同款氛围感', '偷师明星化妆师'])}"
+            scene = random.choice(['明星同款妆容', '通勤妆拆解', '氛围感妆容'])
+            angle = f"把「{short}」话题嫁接到美妆场景：{scene}，自然挂小黄车"
+            title = f"「{short}」×美妆｜{random.choice(['这3支口红必入', '5分钟打造同款氛围感', '偷师明星化妆师'])}"
+            tags = ["#跨界借势", "#氛围感"]
+        recreate.append({"source": src, "original": short, "title": title, "angle": angle, "tags": tags})
+
+    return {"ideas": ideas, "recreate": recreate}
             tags = ["#跨界借势", "#氛围感"]
         recreate.append({"source": src, "original": original, "title": title, "angle": angle, "tags": tags})
 
