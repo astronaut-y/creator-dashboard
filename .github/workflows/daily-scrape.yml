@@ -1,0 +1,43 @@
+name: 每日自动抓取热榜
+
+on:
+  # 每天北京时间 8:00（UTC 0:00）自动跑
+  schedule:
+    - cron: '0 0 * * *'
+  # 每天 14:00 再跑一次（看盘前更新财经数据）
+  - cron: '0 6 * * *'
+  # 手动触发
+  workflow_dispatch:
+
+permissions:
+  contents: write  # 允许提交回仓库
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 安装依赖
+        run: pip install requests
+
+      - name: 抓取热榜 + 财经数据
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GIST_ID: ${{ secrets.GIST_ID }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          WX_RSS_URLS: ${{ secrets.WX_RSS_URLS }}
+          FUNDS: ${{ secrets.FUNDS }}
+          DAILYHOT_API: ${{ secrets.DAILYHOT_API }}
+        run: python hot_scraper.py --commit
+
+      - name: 触发 GitHub Pages 重建
+        if: success()
+        run: |
+          echo "✅ 数据已更新，GitHub Pages 将自动重建"
