@@ -1,39 +1,25 @@
 {
-  "updated_at": "2026-09-06 10:12:19",
+  "updated_at": "2026-09-07 01:28:41",
   "indexes": [
     {
       "name": "上证指数",
-      "value": "3930.1164",
-      "change": -0.3
+      "value": "3942.5093",
+      "change": 0.32
     },
     {
       "name": "深证成指",
-      "value": "13516.97",
-      "change": -0.79
+      "value": "13605.02",
+      "change": 0.65
     },
     {
       "name": "创业板指",
-      "value": "3286.55",
-      "change": -0.78
+      "value": "3326.42",
+      "change": 1.21
     }
   ],
   "funds": [
     {
       "code": "270042",
-      "name": "",
-      "nav": "--",
-      "change": 0,
-      "time": ""
-    },
-    {
-      "code": "161725",
-      "name": "",
-      "nav": "--",
-      "change": 0,
-      "time": ""
-    },
-    {
-      "code": "005827",
       "name": "",
       "nav": "--",
       "change": 0,
@@ -47,7 +33,21 @@
       "time": ""
     },
     {
+      "code": "161725",
+      "name": "",
+      "nav": "--",
+      "change": 0,
+      "time": ""
+    },
+    {
       "code": "320007",
+      "name": "",
+      "nav": "--",
+      "change": 0,
+      "time": ""
+    },
+    {
+      "code": "005827",
       "name": "",
       "nav": "--",
       "change": 0,
